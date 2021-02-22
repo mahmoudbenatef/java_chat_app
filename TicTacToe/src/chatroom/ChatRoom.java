@@ -755,3 +755,55 @@ backToMenuButton.setOnAction(new EventHandler<ActionEvent>() {
         return borderPane;
 
     }
+    public GridPane requestPage(String user) {
+
+        GridPane gp = new GridPane();
+        gp.setAlignment(Pos.CENTER);
+        gp.setHgap(10);
+        gp.setVgap(10);
+        gp.setPadding(new Insets(25, 25, 25, 25));
+        gp.setId("second-pane");
+
+        Label notation = new Label(user + " wants to play with you, do you accept?");
+        notation.setId("main-title");
+
+        Button acceptButton = new Button("accept");
+        Button cancelButton = new Button("cancel");
+
+        acceptButton.setId("acceptbtn");
+        cancelButton.setId("acceptbtn");
+
+        acceptButton.setPrefHeight(40);
+        acceptButton.setPrefWidth(90);
+
+        cancelButton.setPrefHeight(40);
+        cancelButton.setPrefWidth(90);
+        acceptButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                acceptButton.getScene().setRoot(playPage(user));
+                ps.println("accepted");
+                ps.println(user);
+            }
+        });
+
+        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                cancelButton.getScene().setRoot(mainPage());
+            }
+        });
+
+        GridPane.setHalignment(notation, HPos.CENTER);
+        GridPane.setHalignment(acceptButton, HPos.CENTER);
+        GridPane.setHalignment(cancelButton, HPos.CENTER);
+        gp.add(notation, 0, 0);
+        HBox requestHBox = new HBox(10.0, acceptButton, cancelButton);
+        requestHBox.setAlignment(Pos.CENTER);
+        GridPane.setHalignment(requestHBox, HPos.CENTER);
+        gp.add(requestHBox, 0, 1);
+
+        return gp;
+    }

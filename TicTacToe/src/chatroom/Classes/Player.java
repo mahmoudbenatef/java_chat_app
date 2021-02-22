@@ -7,10 +7,11 @@ package chatroom.Classes;
 
 /**
  *
- 
+ * @author atef
  */
 public class Player {
-     private int id;
+
+    private int id;
     private String username;
     private String password;
     private int points;
@@ -23,10 +24,15 @@ public class Player {
         this.nickName = nickName;
 
     }
-    public Player()
-    {
+    
+    public Player(String username, String nickname, String password) {
+        this.username = username;
+        this.nickName = nickname;
+        this.password = password;
+        this.flag = 1;
     }
-
+    
+    
     public int getId() {
         return id;
     }
@@ -74,6 +80,5 @@ public class Player {
     public String getNickName() {
         return nickName;
     }
-
-   
+    
 }

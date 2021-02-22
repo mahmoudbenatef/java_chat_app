@@ -514,20 +514,171 @@ public class ChatRoom extends Application {
 
         return gridPane;
     }   
-}
-
-//To edit combobox shape
-
-class ShapeCell extends ListCell<String> {
-}
-
-class ShapeCellFactory implements Callback<ListView<String>, ListCell<String>> {
-
-    @Override
-    public ListCell<String> call(ListView<String> param) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+public String getUsername() {
+        return username;
     }
 
-}
+    public GridPane mainPage() {
+        // properties of text 
+        GridPane grid = new GridPane();
+        grid.setVgap(10);
+        grid.setHgap(10);
+        grid.setPadding(new Insets(2, 2, 2, 2));
+        grid.setId("second-pane");
 
+        // option list 
+        playerComboBox = new ComboBox();
+
+        playerComboBox = new ComboBox();
+        for (Player pp : playerList) {
+            playerComboBox.getItems().add(
+                    pp.getUsername() + "," + pp.getPoints() + "," + pp.getFlag()
+            );
+        }
+
+        playerComboBox.setValue("please choose one player");
+
+        // Set the CellFactory property
+        playerComboBox.setCellFactory(new ShapeCellFactory());
+        // Set the ButtonCell property
+        playerComboBox.setButtonCell(new ShapeCell());
+        ////////////////////////////////////////////////
+        playerComboBox.setValue("please choose one player");
+        playerComboBox.setId(("combo-box"));
+
+        // handle of option list 
+        playerComboBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if (playerComboBox.getSelectionModel().getSelectedIndex() > -1) {
+
+                    int index = playerComboBox.getSelectionModel().getSelectedIndex();
+                    username = playerList.get(index).getUsername();
+                    userActiveFlag = playerList.get(index).getFlag();
+
+                }
+            }
+
+        });
+
+        Label headerLabel = new Label("Welcome To The Game");
+         scoreLabel = new Label("Score " + myScore);
+        headerLabel.setFont(Font.font("Verdana", FontPosture.ITALIC, 20));
+        scoreLabel.setFont(Font.font("Verdana", FontPosture.ITALIC, 1));
+        GridPane.setHalignment(headerLabel, HPos.CENTER);
+        headerLabel.setId("main-title");
+        scoreLabel.setId("submain-title");
+
+        // radio button
+        ToggleGroup radioGroup = new ToggleGroup();
+        RadioButton radioButton1 = new RadioButton("computer");
+        radioButton1.setId("radio-button");
+        RadioButton radioButton2 = new RadioButton("player");
+        radioButton1.setToggleGroup(radioGroup);
+        radioButton2.setToggleGroup(radioGroup);
+        radioButton2.setId("radio-button");
+
+        radioGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+            @Override
+            public void changed(ObservableValue<? extends Toggle> ov, Toggle t, Toggle t1) {
+
+                RadioButton chk = (RadioButton) t1.getToggleGroup().getSelectedToggle(); // Cast object to radio button
+                if (chk.getText().equals("computer")) {
+                    playWithBot = true;
+                }
+
+            }
+        });
+
+        VBox hbox = new VBox(radioButton1, radioButton2);
+        hbox.setSpacing(10);
+        //play button
+        playButton = new Button("play");
+        playButton.setPrefHeight(70);
+        playButton.setDefaultButton(true);
+        playButton.setPrefWidth(130);
+        playButton.setId("buttons");
+
+        playButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                if (playWithBot) {
+                    resumeGame = true;
+                    ps.println("resume play");
+
+                    isX = true;
+                } else if (userActiveFlag == 1) {
+                    ps.println("chat");
+                    ps.println(username);
+                    isX = true;
+                } else {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Alert alertActive = new Alert(AlertType.ERROR);
+                            alertActive.setTitle("Error Message");
+                            alertActive.setHeaderText("You can't play with offline player");
+                            alertActive.showAndWait();
+                        }
+                    });
+                }
+
+            }
+        });
+
+        alertLabel = new Label("alert");
+        alertLabel.setVisible(false);
+
+        grid.add(headerLabel, 2, 2);
+        grid.add(scoreLabel, 2, 4);
+        grid.add(playerComboBox, 2, 10);
+        grid.add(hbox, 2, 8);
+        grid.add(playButton, 10, 22);
+        grid.add(alertLabel, 10, 52);
+
+        return grid;
+
+    }
+
+    public boolean isPlayWithBot() {
+        return playWithBot;
+    }
+
+    public BorderPane playPage(String user) {
+        textMessageArea = new TextArea();
+        textMessageArea.setEditable(false);
+        textMessageArea.setPrefSize(300, 345);
+        AnchorPane chatPane = new AnchorPane();
+        BorderPane.setAlignment(chatPane, Pos.CENTER);
+        chatPane.setPrefSize(277, 400);
+
+        textMessageArea.setLayoutX(5);
+        textMessageArea.setLayoutY(5);
+        if (!playWithBot) {
+
+            chatPane.getChildren().add(textMessageArea);
+        }
+
+        TextField textField = new TextField();
+
+        textField.setPrefWidth(180.0);
+
+        Button sendButton = new Button("send");
+        sendButton.setPrefWidth(50);
+        sendButton.setId("buttons2");
+        backToMenuButton = new Button("back");
+        backToMenuButton.setPrefWidth(50);
+        backToMenuButton.setId("buttons2");
+
+        sendButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                MyMessage myMessage = new MyMessage(user, textField.getText());
+                ps.println("send message");
+                ps.println(new Gson().toJson(myMessage));
+                textField.clear();
+            }
+        });
 

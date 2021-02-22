@@ -133,6 +133,7 @@ public class ChatRoom extends Application {
         mysocket = new Socket("127.0.0.1", 5005);
         dis = new DataInputStream(mysocket.getInputStream());
         ps = new PrintStream(mysocket.getOutputStream());
+
         chatThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -354,6 +355,7 @@ public class ChatRoom extends Application {
         chatThread.start();
 
     }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -513,8 +515,9 @@ public class ChatRoom extends Application {
         });
 
         return gridPane;
-    }   
-public String getUsername() {
+    }
+
+    public String getUsername() {
         return username;
     }
 
@@ -682,14 +685,7 @@ public String getUsername() {
             }
         });
 
-    @Override
-    public ListCell<String> call(ListView<String> listview) {
-        return new ShapeCell();
-    }
-}
-
-
-backToMenuButton.setOnAction(new EventHandler<ActionEvent>() {
+        backToMenuButton.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
@@ -755,6 +751,7 @@ backToMenuButton.setOnAction(new EventHandler<ActionEvent>() {
         return borderPane;
 
     }
+
     public GridPane requestPage(String user) {
 
         GridPane gp = new GridPane();
@@ -807,3 +804,205 @@ backToMenuButton.setOnAction(new EventHandler<ActionEvent>() {
 
         return gp;
     }
+
+    public void winMessage(String whoWon) {
+        String msg;
+        if (!whoWon.equals("x")) {
+            msg = "O won!";
+        } else {
+            msg = "X won!";
+        }
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Alert gameEndAlert = new Alert(Alert.AlertType.INFORMATION);
+                gameEndAlert.setTitle("game ended");
+                gameEndAlert.setHeaderText(msg);
+                gameEndAlert.showAndWait();
+                turn = "o";
+                isX = false;
+                backToMenuButton.getScene().setRoot(mainPage());
+
+            }
+        });
+
+    }
+
+    public void cleanMap() {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                board[i][j].getPlayerMove().setText("");
+            }
+        }
+
+    }
+
+    public void drawMessage() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Alert gameEndAlert = new Alert(Alert.AlertType.INFORMATION);
+                gameEndAlert.setTitle("game ended");
+                gameEndAlert.setHeaderText("draw!");
+                gameEndAlert.showAndWait();
+                turn = "o";
+                isX = false;
+                backToMenuButton.getScene().setRoot(mainPage());
+
+            }
+
+        });
+    }
+
+    public String[][] cellValues() {
+        String[][] values = new String[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                values[i][j] = board[i][j].getPlayerMove().getText().toString();
+            }
+        }
+        return values;
+    }
+
+    public DataInputStream getDis() {
+        return dis;
+    }
+
+    public PrintStream getPs() {
+        return ps;
+    }
+
+    public boolean isX() {
+        return isX;
+    }
+
+    public String getTurn() {
+        return turn;
+    }
+
+    public String getMyUserName() {
+        return myUserName;
+    }
+
+    public boolean playerWon() {
+        //row
+        boolean won = false;
+        for (int i = 0; i < board.length; i++) {
+            if (board[i][0].getPlayerMove().getText().equals(board[i][1].getPlayerMove().getText())
+                    && board[i][0].getPlayerMove().getText().equals(board[i][2].getPlayerMove().getText())
+                    && !board[i][0].getPlayerMove().getText().isEmpty()) {
+                won = true;
+                winner = board[i][0].getPlayerMove().getText();
+            }
+        }
+        //column
+        for (int i = 0; i < board.length; i++) {
+            if (board[0][i].getPlayerMove().getText().equals(board[1][i].getPlayerMove().getText())
+                    && board[0][i].getPlayerMove().getText().equals(board[2][i].getPlayerMove().getText())
+                    && !board[0][i].getPlayerMove().getText().isEmpty()) {
+                won = true;
+                winner = board[0][i].getPlayerMove().getText();
+            }
+        }
+        //diagonal
+        if (board[0][0].getPlayerMove().getText().equals(board[1][1].getPlayerMove().getText())
+                && board[0][0].getPlayerMove().getText().equals(board[2][2].getPlayerMove().getText()) && !board[0][0].getPlayerMove().getText().isEmpty()) {
+            won = true;
+            winner = board[0][0].getPlayerMove().getText();
+        }
+        if (board[0][2].getPlayerMove().getText().equals(board[1][1].getPlayerMove().getText())
+                && board[0][2].getPlayerMove().getText().equals(board[2][0].getPlayerMove().getText()) && !board[0][2].getPlayerMove().getText().isEmpty()) {
+            won = true;
+            winner = board[0][2].getPlayerMove().getText();
+        }
+
+        return won;
+    }
+
+    public void winMessage() {
+        String msg;
+        if (winner.equals("o")) {
+            msg = "O won!";
+        } else {
+            msg = "X won!";
+        }
+
+        Alert gameEndAlert = new Alert(Alert.AlertType.INFORMATION);
+        gameEndAlert.setTitle("game ended");
+        gameEndAlert.setHeaderText(msg);
+        gameEndAlert.showAndWait();
+        // ChatRoom
+    }
+
+    public void botMove() {
+
+        while (true) {
+            int x = new Random().nextInt(2 - 0 + 1) + 0;
+            int y = new Random().nextInt(2 - 0 + 1) + 0;
+            if (board[x][y].getPlayerMove().getText().isEmpty()) {
+                board[x][y].getPlayerMove().setText("o");
+                break;
+            }
+        }
+
+    }
+
+    public boolean gameOver() {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (board[i][j].getPlayerMove().getText().isEmpty()) {
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+}
+//To edit combobox shape
+
+class ShapeCell extends ListCell<String> {
+
+    @Override
+    public void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+
+        if (empty) {
+            setText(null);
+            setGraphic(null);
+        } else {
+            setText("");
+            GridPane cellShape = this.getShape(item);
+            setGraphic(cellShape);
+        }
+    }
+
+    public GridPane getShape(String shapeType) {
+        GridPane shape = null;
+        Circle status;
+
+        if (shapeType != null) {
+            String[] inputItemsSplit = shapeType.split(",");
+            if (Integer.valueOf(inputItemsSplit[2]) == 1) {
+                status = new Circle(3, Color.GREEN);
+            } else {
+                status = new Circle(3, Color.RED);
+            }
+            Label playerNameStatus = new Label(inputItemsSplit[0], status);
+            Label playerScore = new Label("Score: " + inputItemsSplit[1]);
+            shape = new GridPane();
+            shape.add(playerNameStatus, 0, 0);
+            shape.add(playerScore, 0, 1);
+        }
+
+        return shape;
+    }
+}
+
+class ShapeCellFactory implements Callback<ListView<String>, ListCell<String>> {
+
+    @Override
+    public ListCell<String> call(ListView<String> listview) {
+        return new ShapeCell();
+    }
+}

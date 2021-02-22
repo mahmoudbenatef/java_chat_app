@@ -44,7 +44,7 @@ import socketserverchat.Classes.Player;
 
 /**
  *
-
+ * @author atef
  */
 public class ServerGUI extends Application {
 
@@ -53,7 +53,7 @@ public class ServerGUI extends Application {
     private SocketServerChat startServer;
     Thread updatePlayerThread;
     ListView<String> listView;
-    boolean isStarted = false;
+     boolean isStarted = false;
 
     @Override
     public void init() {
@@ -104,6 +104,11 @@ public class ServerGUI extends Application {
                         SocketServerChat.isUpdatedUser = false;
                     }
                 });
+
+                for (Player pp : SocketServerChat.allPlayers) {
+                }
+//                }
+
             }
         }, begin, timeInterval);
 
@@ -182,9 +187,6 @@ public class ServerGUI extends Application {
         });
     }
 
-
-
-
     /**
      * @param args the command line arguments
      */
@@ -192,7 +194,36 @@ public class ServerGUI extends Application {
         launch(args);
     }
 
-    //To edit combobox shape
+}
+
+class ServerSocketThread extends Thread {
+
+    private static SocketServerChat startServer;
+    private static String pressedButton;
+
+    public static String getPressedButton() {
+        return pressedButton;
+    }
+
+    public static SocketServerChat getStartServer() {
+        return startServer;
+    }
+
+    public static void setPressedButton(String buttonStatus) {
+        pressedButton = buttonStatus;
+    }
+
+    public ServerSocketThread() {
+        this.start();
+    }
+
+    @Override
+    public void run() {
+        startServer = new SocketServerChat();
+    }
+}
+
+//To edit combobox shape
 class ShapeCell extends ListCell<String> {
 
     @Override

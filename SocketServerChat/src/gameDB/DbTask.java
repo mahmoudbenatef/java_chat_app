@@ -16,10 +16,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import socketserverchat.Classes.Player;
 
-/**
- *
- * @author atef
- */
 public class DbTask {
     static Connection con = null;
 
@@ -103,5 +99,117 @@ public class DbTask {
             return -1;
         }
     }
+
+        public static int getID(String userName) {
+        String sql = "SELECT id FROM players WHERE username = ?";
+        try (
+                PreparedStatement pstmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            pstmt.setString(1, userName);
+            ResultSet resultSet = pstmt.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+
+        } catch (SQLException e) {
+        }
+        return -1;
+    }
+
+    public static ArrayList<Player> getAll(String username) {
+        defineConnection();
+        ResultSet resultSet = null;
+        ArrayList<Player> players = new ArrayList<>();
+        String sql = "select * from players WHERE username != ? ORDER BY flag desc, points desc";
+        try (
+                PreparedStatement pstmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE)) {
+            pstmt.setString(1, username);
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+                Player p = new Player();
+                p.setId(resultSet.getInt(1));
+                p.setUsername(resultSet.getString(2));
+                p.setPassword(resultSet.getString(3));
+                p.setPoints(resultSet.getInt(4));
+                p.setFlag(resultSet.getInt(5));
+                p.setNickName(resultSet.getString(6));
+
+                players.add(p);
+
+            }
+            for (Player p : players) {
+            }
+
+        } catch (SQLException e) {
+        }
+        return players;
+    }
+
+    public static void updateOffLine(String username) {
+        try {
+            PreparedStatement pst = con.prepareStatement("UPDATE players SET flag = ?  where username = ?");
+            pst.setInt(1, 0);
+            pst.setString(2, username);
+            pst.executeUpdate();
+
+        } catch (Exception e) {
+        }
+    }
+
+    public static void updateScore(String winner) {
+        try {
+            PreparedStatement pst = con.prepareStatement("UPDATE players SET points = points+10  where username = ?");
+            pst.setString(1, winner);
+            pst.executeUpdate();
+
+        } catch (Exception e) {
+        }
+
+    }
+
+    public static void saveMap(String mapJson, String username) {
+        try {
+            PreparedStatement pst = con.prepareStatement("UPDATE players SET map = ?  where username = ?");
+            pst.setString(1, mapJson);
+            pst.setString(2, username);
+            pst.executeUpdate();
+
+        } catch (Exception e) {
+        }
+    }
+
+    public static String getMap(String userName) {
+        String sql = "SELECT map FROM players WHERE username = ?";
+        String map = null;
+        try (
+                PreparedStatement pstmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            pstmt.setString(1, userName);
+
+            ResultSet resultSet = pstmt.executeQuery();
+            if (resultSet.next()) {
+                map = resultSet.getString("map");
+            }
+        } catch (SQLException e) {
+        }
+        return map;
+    }
+    public static int getScore(String userName){
+        String sql = "SELECT points FROM players WHERE username = ?";
+        int score = -1;
+        try (
+                PreparedStatement pstmt = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            pstmt.setString(1, userName);
+
+            ResultSet resultSet = pstmt.executeQuery();
+            if (resultSet.next()) {
+                score = resultSet.getInt("points");
+            }
+        } catch (SQLException e) {
+        }
+        return score;
+    }
+
+}
+
     
 

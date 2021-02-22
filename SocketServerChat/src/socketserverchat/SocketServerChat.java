@@ -168,3 +168,72 @@ class ChatHandler extends Thread {
         }
     }
     
+    void sendMsg(String username, String gameResponseJson) {
+        for (ChatHandler ch : clientsArrayList) {
+            if (ch.userName.equals(username)) {
+                ch.ps.println("update game");
+                ch.ps.println(gameResponseJson);
+            }
+
+        }
+
+    }
+
+    public void gameinfoToSelf(String gameJson) {
+        this.ps.println("update game");
+        this.ps.println(gameJson);
+    }
+
+    public boolean playerWon(String[][] stringArr) {
+        boolean won = false;
+
+        //row
+        for (int i = 0; i < stringArr.length; i++) {
+            if (stringArr[i][0].equals(stringArr[i][1])
+                    && stringArr[i][0].equals(stringArr[i][2])
+                    && !stringArr[i][0].isEmpty()) {
+                won = true;
+            }
+        }
+        //column
+        for (int i = 0; i < stringArr.length; i++) {
+            if (stringArr[0][i].equals(stringArr[1][i])
+                    && stringArr[0][i].equals(stringArr[2][i])
+                    && !stringArr[0][i].isEmpty()) {
+                won = true;
+
+            }
+        }
+        //diagonal
+        if (stringArr[0][0].equals(stringArr[1][1])
+                && stringArr[0][0].equals(stringArr[2][2]) && !stringArr[0][0].isEmpty()) {
+            won = true;
+        }
+        if (stringArr[0][2].equals(stringArr[1][1])
+                && stringArr[0][2].equals(stringArr[2][0]) && !stringArr[0][2].isEmpty()) {
+            won = true;
+
+        }
+
+        return won;
+    }
+
+    public boolean draw(String stringArr[][]) {
+
+        for (int i = 0; i < stringArr.length; i++) {
+            for (int j = 0; j < stringArr[i].length; j++) {
+                if (stringArr[i][j].isEmpty()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public String getItem() {
+
+        return cellItem[(index++) % (cellItem.length)];
+    }
+
+}

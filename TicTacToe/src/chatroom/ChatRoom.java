@@ -70,10 +70,69 @@ import javafx.util.Callback;
  */
 public class ChatRoom extends Application {
 
+    Socket mysocket;
+    DataInputStream dis;
+    PrintStream ps;
+    Thread chatThread;
+    TextArea textArea;
+    Label errorLabel;
+    Scene scene;
+    List<Player> playerList;
+    String username;
+    int userActiveFlag;
+    Button alertInitButton;
+    Label alertLabel;
+    TextArea textMessageArea;
+    TextField loginUserTextField;
+    PasswordField loginpwBox;
+    private String winner;
+    Label labelTrial;
+    ComboBox playerComboBox;
+    Circle circle;
+    Label labelTrial2;
+    GridPane gridPanes;
+    private BorderPane borderPane;
+    private Button backToMenuButton;
+    private GridPane gridPane;
+    private Cell[][] board = new Cell[3][3];
+    private String map[][];
+    private Button playButton;
+    private String turn = "o";
+    boolean isX;
+    private String myUserName;
+    private boolean playWithBot;
+    private boolean resumeGame;
+    private Label scoreLabel;
+    private int myScore = 0 ;
+
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void start(Stage primaryStage) {
+
+        primaryStage.setTitle("Tic Tac Toe");
+
+        //primaryStage.setScene(scene);
+        scene = new Scene(login(), 800, 500);
+        scene.getStylesheets().addAll(this.getClass().getResource("ChatRoomStyle.css").toExternalForm());
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                ps.println("exit");
+                System.exit(0);
+            }
+        });
+
     }
+
+    /**
+     * @param args the command line arguments
+     */
+    @Override
+    public void init() throws IOException {
+        mysocket = new Socket("127.0.0.1", 5005);
+        dis = new DataInputStream(mysocket.getInputStream());
+        ps = new PrintStream(mysocket.getOutputStream());
 }
 //To edit combobox shape
 
@@ -88,3 +147,5 @@ class ShapeCellFactory implements Callback<ListView<String>, ListCell<String>> {
     }
 
 }
+
+

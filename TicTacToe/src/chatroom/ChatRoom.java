@@ -133,8 +133,7 @@ public class ChatRoom extends Application {
         mysocket = new Socket("127.0.0.1", 5005);
         dis = new DataInputStream(mysocket.getInputStream());
         ps = new PrintStream(mysocket.getOutputStream());
-}
-chatThread = new Thread(new Runnable() {
+        chatThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 boolean successfull = false;
@@ -355,6 +354,8 @@ chatThread = new Thread(new Runnable() {
         chatThread.start();
 
     }
+}
+
 //To edit combobox shape
 
 class ShapeCell extends ListCell<String> {

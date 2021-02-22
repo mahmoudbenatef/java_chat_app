@@ -354,6 +354,166 @@ public class ChatRoom extends Application {
         chatThread.start();
 
     }
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    public GridPane login() {
+        GridPane grid = new GridPane();
+        grid.setId("pane");
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+        errorLabel = new Label("Invalid credentials");
+        errorLabel.setTextFill(Color.RED);
+        errorLabel.setVisible(false);
+        grid.add(errorLabel, 1, 18);
+
+        loginUserTextField = new TextField();
+        GridPane.setHalignment(loginUserTextField, HPos.CENTER);
+
+        grid.add(loginUserTextField, 0, 16);
+        GridPane.setColumnSpan(loginUserTextField, 2);
+
+        loginUserTextField.setPromptText("Username");
+        loginUserTextField.setFocusTraversable(false);
+        loginUserTextField.setId("textField");
+
+        loginpwBox = new PasswordField();
+        GridPane.setHalignment(loginpwBox, HPos.CENTER);
+        grid.add(loginpwBox, 0, 17);
+        GridPane.setColumnSpan(loginpwBox, 2);
+        loginpwBox.setPromptText("Password");
+        loginpwBox.setFocusTraversable(false);
+        loginpwBox.setId("textField");
+
+        Button loginButton = new Button("Sign in");
+        grid.add(loginButton, 0, 19);
+        loginButton.setId("buttons");
+        GridPane.setHalignment(loginButton, HPos.LEFT);
+
+        loginButton.setPrefSize(120, 30);
+
+        Button registerButton = new Button("Register");
+        grid.add(registerButton, 1, 19);
+        registerButton.setId("buttons");
+
+        GridPane.setHalignment(registerButton, HPos.RIGHT);
+        registerButton.setPrefSize(120, 30);
+
+        loginButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                playerLogin();
+            }
+        });
+
+        registerButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent arg0) {
+                registerButton.getScene().setRoot(register());
+            }
+
+        });
+
+        return grid;
+    }
+
+    public void playerLogin() {
+        Player player = new Player(loginUserTextField.getText(), loginpwBox.getText());
+        ps.println("login");
+        ps.println(new Gson().toJson(player));
+    }
+
+    public GridPane register() {
+        GridPane gridPane = new GridPane();
+        gridPane.setId("pane");
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.setPadding(new Insets(25, 25, 25, 25));
+
+        errorLabel = new Label("Invalid credentials");
+        errorLabel.setTextFill(Color.RED);
+        errorLabel.setVisible(false);
+        GridPane.setHalignment(errorLabel, HPos.RIGHT);
+        gridPane.add(errorLabel, 1, 22);
+
+        TextField usernameField = new TextField();
+        GridPane.setHalignment(usernameField, HPos.CENTER);
+
+        usernameField.setPromptText("Username");
+        GridPane.setColumnSpan(usernameField, 2);
+
+        gridPane.add(usernameField, 0, 19);
+        usernameField.setId("textField");
+
+        TextField nicknameField = new TextField();
+
+        GridPane.setHalignment(nicknameField, HPos.CENTER);
+
+        nicknameField.setPromptText("nickname");
+
+        gridPane.add(nicknameField, 0, 20);
+        nicknameField.setId("textField");
+        GridPane.setColumnSpan(nicknameField, 2);
+
+        PasswordField passwordfield = new PasswordField();
+        GridPane.setHalignment(passwordfield, HPos.CENTER);
+        GridPane.setColumnSpan(passwordfield, 2);
+        passwordfield.setPromptText("password");
+        gridPane.add(passwordfield, 0, 21);
+        passwordfield.setId("textField");
+
+        Button RegisterButton = new Button("Register");
+
+        RegisterButton.setPrefSize(120, 30);
+        RegisterButton.setId("buttons");
+        GridPane.setHalignment(RegisterButton, HPos.LEFT);
+
+        gridPane.add(RegisterButton, 0, 23);
+
+        final Button backButton = new Button("Back");
+
+        backButton.setPrefSize(120, 30);
+        backButton.setId("buttons");
+        GridPane.setHalignment(backButton, HPos.RIGHT);
+        gridPane.add(backButton, 1, 23);
+
+        backButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent arg0) {
+                backButton.getScene().setRoot(login());
+            }
+        });
+
+        RegisterButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent arg0) {
+                if (!usernameField.getText().equals("") && !nicknameField.getText().equals("") && !passwordfield.getText().equals("")) {
+                    Player player = new Player(usernameField.getText(), nicknameField.getText(), passwordfield.getText());
+                    ps.println("register");
+                    ps.println(new Gson().toJson(player));
+                } else {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Alert alertActive = new Alert(AlertType.ERROR);
+                            alertActive.setTitle("Error Message");
+                            alertActive.setHeaderText("All fields are required !!!");
+                            alertActive.showAndWait();
+                        }
+                    });
+                }
+            }
+        });
+
+        return gridPane;
+    }   
 }
 
 //To edit combobox shape

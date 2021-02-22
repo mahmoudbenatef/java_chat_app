@@ -28,7 +28,10 @@ import socketserverchat.Classes.Player;
 import socketserverchat.Classes.Room;
 import socketserverchat.Classes.Room;
 
-
+/**
+ *
+ * @author atef
+ */
 public class SocketServerChat {
 
     /**
@@ -86,9 +89,6 @@ public class SocketServerChat {
         }
     }
 }
-
-
-
 
 class ChatHandler extends Thread {
 
@@ -167,7 +167,214 @@ class ChatHandler extends Thread {
             }
         }
     }
-    
+
+    public void run() {
+        String optionFlag = "";
+        while (true) {
+            DbTask.defineConnection();
+            String str = null;
+            try {
+                str = dis.readLine();
+                if (str != null) {
+                    if (optionFlag.equals("chat")) {
+                        sendMessageToPlayer(str, "request chat");
+                        optionFlag = "";
+                    } else if (str.equals("login")) {
+                        optionFlag = "login";
+                    } else if (optionFlag.equals("login")) {
+                        playerLogin(str, optionFlag);
+                        this.ps.println("resume game");
+                        this.ps.println(DbTask.getMap(this.userName));
+                        optionFlag = "";
+                    } else if (str.equals("register")) {
+                        optionFlag = "register";
+                    } else if (optionFlag.equals("register")) {
+                        String json_string = str;
+                        Gson gson = new Gson();
+                        Player p = gson.fromJson(json_string, Player.class);
+                        if (p != null) {
+                            int idNumber = DbTask.register(p);
+                            if (idNumber != -1) {
+                                sendAllPlayers(p.getUsername(), "registered successfully");
+                                this.ps.println("myName");
+                                this.ps.println(this.userName);
+                                SocketServerChat.allPlayers = DbTask.getAll("");
+                                SocketServerChat.isUpdatedUser = true;
+                            } else {
+                                this.ps.println("registration failed");
+                            }
+                        }
+                        optionFlag = "";
+
+                    } else if (str.equals("chat")) {
+                        optionFlag = "chat";
+                    } else if (str.equals("accepted")) {
+                        optionFlag = "accepted";
+                    } else if (optionFlag.equals("accepted")) {
+                        sendMessageToPlayer(str, "accept chat");
+                        rooms.add(new Room(this.userName, str));
+                        //player one
+                        optionFlag = "";
+                    } else if (str.equals("send message")) {
+                        optionFlag = "sent";
+                    } else if (optionFlag.equals("sent")) {
+                        Gson gson = new Gson();
+                        MyMessage message = gson.fromJson(str, MyMessage.class);
+                        sendTextMessageToPlayer(message);
+                        optionFlag = "";
+                    } else if (str.equals("exit")) {
+                        DbTask.updateOffLine(this.userName);
+                        clientsArrayList.remove(this);
+                        this.stop();
+                    } else if (optionFlag.equals("map")) {
+
+                        Gson gson = new Gson();
+                        GameResponse g1 = gson.fromJson(str, GameResponse.class);
+
+                        String[][] stringArr = g1.getArr();
+                        gameResponse = new GameResponse(stringArr, playerWon(stringArr), draw(stringArr), g1.getPlayer1(), "");
+
+                        sendToPlayers(this.userName, gameResponse);
+
+                        optionFlag = "";
+                    } else if (str.equals("cell got clicked")) {
+                        optionFlag = "map";
+                    } else if (str.equals("help")) {
+                        this.ps.println("why");
+                    } else if (str.equals("save map")) {
+                        optionFlag = "save to db";
+                    } else if (optionFlag.equals("save to db")) {
+
+                        DbTask.saveMap(str, this.userName);
+                        optionFlag = "";
+                    } else if (str.equals("reset game")) {
+                        DbTask.saveMap(null, this.userName);
+                    } else if (str.equals("resume play")) {
+                        this.ps.println("resume-game-play");
+                        this.ps.println(DbTask.getMap(this.userName));
+                    }else if(str.equals("back")){
+                        Room roomToRemove=null;
+                        for(Room currentRoom:rooms){
+                            if(currentRoom.getPlayer1().equals(this.userName)||currentRoom.getPlayer2().equals(this.userName)){
+                                if(currentRoom.getPlayer1().equals(this.userName)){
+                                    DbTask.updateScore(currentRoom.getPlayer2());
+                                }else {
+                                    DbTask.updateScore(currentRoom.getPlayer1());
+                                }
+                                sendMessageToPlayer(currentRoom.getPlayer1(),"back-pressed");
+                                sendMessageToPlayer(currentRoom.getPlayer2(),"back-pressed");
+                                roomToRemove=currentRoom;
+                            }
+                        }
+                        if(roomToRemove!=null){
+                            rooms.remove(roomToRemove);
+                        }
+                    }
+                }
+
+            } catch (IOException ex) {
+                Logger.getLogger(ChatHandler.class.getName()).log(Level.SEVERE, null, ex);
+                ChatHandler.this.ps.close();
+                try {
+                    ChatHandler.this.dis.close();
+                } catch (IOException ex1) {
+                    Logger.getLogger(ChatHandler.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+                this.stop();
+                clientsArrayList.remove(this);
+
+            }
+        }
+    }
+
+    public static void pauseAll() {
+        for (ChatHandler ch : clientsArrayList) {
+            ch.ps.println("pause");
+            ch.suspend();
+        }
+    }
+
+    public static void resumeAll() {
+        for (ChatHandler ch : clientsArrayList) {
+            ch.resume();
+        }
+    }
+
+    public void sendMessageToAll() {
+        ArrayList<Player> players;
+        for (ChatHandler ch : clientsArrayList) {
+            players = DbTask.getAll(ch.userName);
+            ch.ps.println("update player list");
+            ch.ps.println(new Gson().toJson(players));
+        }
+    }
+
+    void sendMessageToPlayer(String username, String message) {
+        for (ChatHandler ch : clientsArrayList) {
+            if (ch.userName.equals(username)) {
+                ch.ps.println(message);
+                ch.ps.println(this.userName);
+            }
+        }
+    }
+
+    void sendTextMessageToPlayer(MyMessage sentMessage) {
+        for (ChatHandler ch : clientsArrayList) {
+            if (ch.userName.equals(sentMessage.getUsername())) {
+                ch.ps.println("text message");
+                ch.ps.println(this.userName + " >>> " + sentMessage.getMessage());
+                this.ps.println("text message");
+                this.ps.println("me >>> " + sentMessage.getMessage());
+            }
+        }
+
+    }
+
+    void sendToPlayers(String userName, GameResponse gameResponse) {
+
+        for (int i = 0; i < rooms.size(); i++) {
+            if (rooms.get(i).getPlayer1().equals(userName) || rooms.get(i).getPlayer2().equals(userName)) {
+                gameResponse.setTurn(rooms.get(i).getItem());
+                Gson gson = new Gson();
+                String gameResponseJson = gson.toJson(gameResponse);
+                sendMsg(rooms.get(i).getPlayer2(), gameResponseJson);
+                sendMsg(rooms.get(i).getPlayer1(), gameResponseJson);
+                if (gameResponse.isGameOver()) {
+                    String winner = gameResponse.getTurn();
+                    if (winner.equals("x")) {
+                        DbTask.updateScore(rooms.get(i).getPlayer2());
+
+                        for (ChatHandler ch : clientsArrayList) {
+                            if (ch.userName.equals(rooms.get(i).getPlayer2())) {
+                                ch.ps.println("myPoints");
+                               int score= DbTask.getScore(rooms.get(i).getPlayer2());
+                                System.out.println("player 2 new score"+score);
+                                ch.ps.println(score);
+                            }
+                        }
+
+
+                    } else {
+                        DbTask.updateScore(rooms.get(i).getPlayer1());
+                        for (ChatHandler ch : clientsArrayList) {
+                            if (ch.userName.equals(rooms.get(i).getPlayer1())) {
+                                ch.ps.println("myPoints");
+                                int score= DbTask.getScore(rooms.get(i).getPlayer1());
+                                System.out.println("player 1new score"+score);
+                                ch.ps.println(score);
+                            }
+                        }
+                    }
+                    sendMessageToAll();
+                    rooms.remove(i);
+                } else if (gameResponse.isDraw()) {
+                    sendMessageToAll();
+                    rooms.remove(i);
+                }
+            }
+        }
+    }
+
     void sendMsg(String username, String gameResponseJson) {
         for (ChatHandler ch : clientsArrayList) {
             if (ch.userName.equals(username)) {

@@ -134,6 +134,227 @@ public class ChatRoom extends Application {
         dis = new DataInputStream(mysocket.getInputStream());
         ps = new PrintStream(mysocket.getOutputStream());
 }
+chatThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean successfull = false;
+                String flagName = "";
+                while (true) {
+                    String str = null;
+                    try {
+                        str = dis.readLine();
+                        if (str != null) {
+
+                            if (str.equals("registration failed")) {
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        errorLabel.setVisible(true);
+                                    }
+                                });
+
+                            } else if (str.equals("login failed")) {
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        errorLabel.setVisible(true);
+                                    }
+                                });
+                            } else if (str.equals("login successfully")) {
+                                successfull = true;
+
+                            } else if (str.equals("registered successfully")) {
+                                successfull = true;
+                            } else if (str.equals("request chat")) {
+                                flagName = "request";
+
+                            } else if (flagName.equals("request")) {
+                                final String temp = str;
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        alertLabel.getScene().setRoot(requestPage(temp));
+                                    }
+                                });
+
+                                flagName = "";
+                            } else if (str.equals("accept chat")) {
+                                flagName = "accept";
+                            } else if (flagName.equals("accept")) {
+                                final String playerName = str;
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        alertLabel.getScene().setRoot(playPage(playerName));
+                                    }
+                                });
+                                flagName = "";
+                            } else if (str.equals("text message")) {
+                                flagName = "message";
+                            } else if (flagName.equals("message")) {
+                                textMessageArea.appendText(str + "\n");
+                                flagName = "";
+                            } else if (successfull == true) {
+
+                                String json_string = str;
+                                Gson gson = new Gson();
+                                ArrayList<Player> players = new ArrayList<>();
+                                Type playerListType = new TypeToken<ArrayList<Player>>() {
+                                }.getType();
+                                playerList = gson.fromJson(json_string, playerListType);
+
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        errorLabel.getScene().setRoot(mainPage());
+                                    }
+
+                                });
+
+                                int i = 0;
+
+                                successfull = false;
+
+                            } else if (str.equals("update player list")) {
+                                flagName = "update player list";
+
+                            } else if (flagName.equals("update player list")) {
+                                Gson gson = new Gson();
+
+                                ArrayList<Player> players = new ArrayList<>();
+                                Type playerListType = new TypeToken<ArrayList<Player>>() {
+                                }.getType();
+                                playerList = gson.fromJson(str, playerListType);
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (playerComboBox != null) {
+                                            playerComboBox.getItems().clear();
+
+                                            for (Player pp : playerList) {
+                                                playerComboBox.getItems().add(
+                                                        pp.getUsername() + "," + pp.getPoints() + "," + pp.getFlag()
+                                                );
+                                            }
+
+                                            playerComboBox.setValue("please choose one player");
+                                            // Set the CellFactory property
+                                            playerComboBox.setCellFactory(new ShapeCellFactory());
+                                            // Set the ButtonCell property
+                                            playerComboBox.setButtonCell(new ShapeCell());
+                                            ////////////////////////////////////////////////
+                                            playerComboBox.setValue("please choose one player");
+                                            playerComboBox.setId(("combo-box"));
+                                        }
+                                    }
+
+                                });
+                                flagName = "";
+                            } else if (flagName.equals("get map")) {
+                                Gson gson = new Gson();
+                                GameResponse gameResponse = gson.fromJson(str, GameResponse.class);
+
+                                if (!gameResponse.getTurn().isEmpty()) {
+                                    turn = gameResponse.getTurn();
+                                }
+                                String[][] stringArr = gameResponse.getArr();
+                                //test loop
+                                for (int i = 0; i < 3; i++) {
+                                    for (int j = 0; j < 3; j++) {
+                                    }
+                                }
+                                for (int i = 0; i < board.length; i++) {
+                                    for (int j = 0; j < board[i].length; j++) {
+                                        if (!stringArr[i][j].isEmpty()) {
+                                            board[i][j].getPlayerMove().setText(stringArr[i][j]);
+                                        }
+                                    }
+
+                                }
+                                if (gameResponse.isGameOver()) {
+                                    winMessage(gameResponse.getTurn());
+
+                                } else if (gameResponse.isDraw()) {
+
+                                    drawMessage();
+                                }
+                                flagName = "";
+                            } else if (str.equals("myName")) {
+                                flagName = "getName";
+                            } else if (flagName.equals("getName")) {
+                                myUserName = str;
+                                flagName = "";
+                            } else if (str.equals("update game")) {
+                                flagName = "get map";
+                            } else if (str.equals("pause")) {
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Alert alertActive = new Alert(AlertType.WARNING);
+                                        alertActive.setTitle("Warning Message");
+                                        alertActive.setHeaderText("Server is down now but your message will arrive as soon as server is back");
+                                        alertActive.showAndWait();
+                                    }
+                                });
+                            } else if (str.equals("resume-game-play")) {
+                                flagName = "resume-game";
+                            } else if (flagName.equals("resume-game")) {
+                                Gson gson = new Gson();
+
+                                map = gson.fromJson(str, String[][].class);
+                                resumeGame = true;
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        playButton.getScene().setRoot(playPage(""));
+
+                                    }
+                                });
+
+                                flagName = "";
+                            }
+                            else if(str.equals("myPoints"))
+                            {
+                                flagName = "myPoints";
+                            }
+                            else if(flagName.equals("myPoints"))
+                            {
+                                myScore= Integer.valueOf(str);
+                               Platform.runLater(new Runnable() {
+                                   @Override
+                                   public void run() {
+                                       if(scoreLabel!=null) {
+                                           scoreLabel.setText("points:" + myScore);
+                                       }
+                                   }
+                               });
+                                
+                            flagName="";
+                            }else if(str.equals("back-pressed")){
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Alert alertActive = new Alert(AlertType.ERROR);
+                                        alertActive.setTitle("player left");
+                                        alertActive.setHeaderText("a player has left the game!");
+                                        alertActive.showAndWait();
+                                        turn = "o";
+                                        isX = false;
+                                        backToMenuButton.getScene().setRoot(mainPage());
+
+                                    }
+                                });
+                            }
+
+                        }
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        });
+        chatThread.start();
+
+    }
 //To edit combobox shape
 
 class ShapeCell extends ListCell<String> {

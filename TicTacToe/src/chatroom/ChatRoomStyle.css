@@ -123,3 +123,43 @@ and open the template in the editor.
     -fx-fill: white;
     -fx-effect: dropshadow( gaussian , #a30000 , 0,0,0,2 );
 }
+
+#buttons:hover {
+    -fx-background-color: #a72b1b;
+    /*        linear-gradient(from 0% 93% to 0% 100%, #a34313 0%, #903b12 100%),
+            #9d4024,
+            #d86e3a,
+            radial-gradient(center 50% 50%, radius 100%, #ea7f4b, #c54e2c);*/
+}
+#buttons:pressed {
+    -fx-padding: 10 15 13 15;
+    -fx-background-insets: 2 0 0 0,2 0 3 0, 2 0 4 0, 2 0 5 0;
+}
+
+#buttons Text {
+    -fx-fill: white;
+    -fx-effect: dropshadow( gaussian , #a30000 , 0,0,0,2 );
+}
+
+#textField{
+    -fx-background-color:white;
+    -fx-font-family: Consolas;
+    -fx-text-fill:#a72b1b;}
+
+
+
+#left-borderPane{ /*this is style class for Vbox */ /*something so similar: */ 
+    -fx-min-height:100px ;
+    -fx-max-height:750px ;
+    /-fx-width:277px;/
+    /-fx-height:300px;/
+    
+}
+
+
+#buttons2 {
+ 
+    -fx-background-color:  #dd4330;
+    -fx-text-fill:white;
+    
+}

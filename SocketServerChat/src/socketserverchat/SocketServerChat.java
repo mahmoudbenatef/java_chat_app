@@ -90,3 +90,81 @@ public class SocketServerChat {
 
 
 
+class ChatHandler extends Thread {
+
+    String userName = "";
+    DataInputStream dis;
+    PrintStream ps;
+    static ArrayList<ChatHandler> clientsArrayList = new ArrayList<>();
+    private GameResponse gameResponse;
+    private static int index;
+    private static int roomNumber;
+    private String[] cellItem = {"x", "o"};
+    private static ArrayList<Room> rooms = new ArrayList<>();
+    private Socket socket;
+
+    public ChatHandler(Socket s) throws IOException {
+        dis = new DataInputStream(s.getInputStream());
+        ps = new PrintStream(s.getOutputStream());
+        socket = s;
+        clientsArrayList.add(this);
+        start();
+    }
+
+    public static boolean checkExistence(String username) {
+        if (clientsArrayList.size() > 0) {
+            for (ChatHandler user : clientsArrayList) {
+                if (user.userName.equals(username)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void sendSelfMessageWithFlag(String flag, String body) {
+        this.ps.println(flag);
+        this.ps.println(body);
+    }
+
+    public void sendSelfMessage(String body) {
+        this.ps.println(body);
+    }
+
+    public Player convertJsonToPlayer(String json_string) {
+        Gson gson = new Gson();
+        Player p = gson.fromJson(json_string, Player.class);
+        return p;
+    }
+
+    //To update the list of players 
+    public void sendAllPlayers(String username, String flag) {
+        this.userName = username;
+        ArrayList<Player> players = DbTask.getAll(username);
+        sendSelfMessageWithFlag(flag, new Gson().toJson(players));
+        sendMessageToAll();
+    }
+
+    public void sendLoginDataAfterLoginSuccessfully(Player p) {
+        if (ChatHandler.checkExistence(p.getUsername())) {
+            sendSelfMessage("login failed");
+        } else {
+            sendSelfMessageWithFlag("myPoints", String.valueOf(p.getPoints()));
+            sendAllPlayers(p.getUsername(), "login successfully");
+            SocketServerChat.allPlayers = DbTask.getAll("");
+            SocketServerChat.isUpdatedUser = true;
+        }
+    }
+
+    public void playerLogin(String str, String optionFlag) {
+        Player p = convertJsonToPlayer(str);
+        if (p != null) {
+            Player dataBasePlayer = DbTask.getPerson(p);
+            if (dataBasePlayer != null) {
+                sendLoginDataAfterLoginSuccessfully(dataBasePlayer);
+            } else {
+                sendSelfMessage("login failed");
+            }
+        }
+    }
+    

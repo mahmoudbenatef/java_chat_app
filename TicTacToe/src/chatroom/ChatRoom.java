@@ -687,3 +687,71 @@ public String getUsername() {
         return new ShapeCell();
     }
 }
+
+
+backToMenuButton.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                if (playWithBot == false) {
+                    ps.println("back");;
+                } else {
+                    resumeGame = false;
+                    playWithBot = false;
+                    turn = "o";
+                    isX = false;
+                    ps.println("save map");
+                    Gson gson = new Gson();
+                    String myMap = gson.toJson(cellValues(), String[][].class);
+                    ps.println(myMap);
+                    map = null;
+                    backToMenuButton.getScene().setRoot(mainPage());
+
+                }
+
+            }
+        });
+
+        Insets insets = new Insets(20);
+        HBox hBox;
+        if (!playWithBot) {
+            hBox = new HBox(10, textField, sendButton, backToMenuButton);
+        } else {
+            hBox = new HBox(10, backToMenuButton);
+        }
+        BorderPane root = new BorderPane();
+        if (!playWithBot) {
+
+            root.setCenter(textMessageArea);
+        }
+        root.setId("left-borderPane");
+        BorderPane.setMargin(textMessageArea, insets);
+        root.setBottom(hBox);
+        BorderPane.setMargin(hBox, insets);
+        borderPane = new BorderPane();
+        borderPane.setId("second-pane");
+        gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                Cell cell = new Cell(this);
+                gridPane.add(cell, j, i);
+                board[i][j] = cell;
+            }
+        }
+        if (resumeGame) {
+            for (int i = 0; i < board.length; i++) {
+                for (int j = 0; j < board[i].length; j++) {
+                    if (map != null) {
+                        board[i][j].getPlayerMove().setText(map[i][j]);
+                    }
+                }
+
+            }
+        }
+        borderPane.setCenter(gridPane);
+        borderPane.setRight(root);
+
+        return borderPane;
+
+    }

@@ -182,9 +182,59 @@ public class ServerGUI extends Application {
         });
     }
 
+
+
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         launch(args);
     }
+
+    //To edit combobox shape
+class ShapeCell extends ListCell<String> {
+
+    @Override
+    public void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+
+        if (empty) {
+            setText(null);
+            setGraphic(null);
+        } else {
+            setText("");
+            GridPane cellShape = this.getShape(item);
+            setGraphic(cellShape);
+        }
+    }
+
+    public GridPane getShape(String shapeType) {
+        GridPane shape = null;
+        Circle status;
+
+        if (shapeType != null) {
+            String[] inputItemsSplit = shapeType.split(",");
+            if (Integer.valueOf(inputItemsSplit[2]) == 1) {
+                status = new Circle(3, Color.GREEN);
+            } else {
+                status = new Circle(3, Color.RED);
+            }
+            Label playerNameStatus = new Label(inputItemsSplit[0], status);
+            Label playerScore = new Label("Score: " + inputItemsSplit[1]);
+            shape = new GridPane();
+            shape.add(playerNameStatus, 0, 0);
+            shape.add(playerScore, 0, 1);
+        }
+
+        return shape;
+    }
+}
+
+class ShapeCellFactory implements Callback<ListView<String>, ListCell<String>> {
+
+    @Override
+    public ListCell<String> call(ListView<String> listview) {
+        return new ShapeCell();
+    }
+}

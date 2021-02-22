@@ -28,9 +28,65 @@ import socketserverchat.Classes.Player;
 import socketserverchat.Classes.Room;
 import socketserverchat.Classes.Room;
 
-/**
- *
- * @author atef
- */
+
 public class SocketServerChat {
+
+    /**
+     * @param args the command line arguments
+     */
+    private static ServerSocket serverSocket;
+    private ChatHandler chatHandler;
+    // static ServerGUI myGui ;
+
+    static ArrayList<Player> allPlayers = new ArrayList<>();
+    static boolean isUpdatedUser = false;
+
+    public static ServerSocket getServerSocket() {
+        return serverSocket;
+    }
+
+    public ChatHandler getChatHandler() {
+        return chatHandler;
+    }
+
+    public static void stopServerSocket() {
+        try {
+            if (serverSocket != null) {
+                serverSocket.close();
+                ChatHandler.pauseAll();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(SocketServerChat.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void resumeServerSocket() {
+        ChatHandler.resumeAll();
+    }
+
+    public SocketServerChat() {
+        try {
+            serverSocket = new ServerSocket(5005);
+        } catch (IOException ex) {
+            Logger.getLogger(SocketServerChat.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        while (true) {
+            if (!serverSocket.isClosed()) {
+                Socket s;
+                try {
+                    s = serverSocket.accept();
+                    chatHandler = new ChatHandler(s);
+                } catch (IOException ex) {
+                    String message = ex.getMessage();
+                    System.out.println(message);
+
+                }
+
+            }
+        }
+    }
 }
+
+
+
+
